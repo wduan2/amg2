@@ -1,0 +1,22 @@
+{
+  "name": "amg2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wduan2/amg2.git"
+  },
+  "author": "Wenyu Duan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wduan2/amg2/issues"
+  },
+  "homepage": "https://github.com/wduan2/amg2#readme",
+  "dependencies": {
+    "sqlite3": "^4.1.0"
+  }
+}
