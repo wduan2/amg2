@@ -1,6 +1,7 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 use std::iter::Peekable;
-use std::slice::Iter;
 use std::vec::IntoIter;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -13,16 +14,6 @@ pub enum CommandArgName {
 }
 
 impl CommandArgName {
-    fn to_s(&self) -> String {
-        match self {
-            CommandArgName::Website => String::from("--website"),
-            CommandArgName::Username => String::from("--username"),
-            CommandArgName::OldUsername => String::from("--old-username"),
-            CommandArgName::Password => String::from("--password"),
-            CommandArgName::Unknown(v) => v.clone()
-        }
-    }
-
     fn from_string(arg: String) -> CommandArgName {
         match arg.as_str() {
             "--website" => CommandArgName::Website,
@@ -30,6 +21,18 @@ impl CommandArgName {
             "--old-username" => CommandArgName::OldUsername,
             "--password" => CommandArgName::Password,
             _ => CommandArgName::Unknown(arg)
+        }
+    }
+}
+
+impl fmt::Display for CommandArgName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            CommandArgName::Website => write!(f, "--website"),
+            CommandArgName::Username => write!(f, "--username"),
+            CommandArgName::OldUsername => write!(f, "--old-username"),
+            CommandArgName::Password => write!(f, "--password"),
+            CommandArgName::Unknown(v) => write!(f, "{v}")
         }
     }
 }
@@ -76,7 +79,7 @@ fn get_arg_map(mut args: Peekable<IntoIter<String>>) -> HashMap<CommandArgName, 
                 if next_arg.starts_with("--") {
                     arg_map.insert(CommandArgName::from_string(arg), None);
                 } else {
-                    arg_map.insert(CommandArgName::from_string(arg), Some(args.next().unwrap().clone()));
+                    arg_map.insert(CommandArgName::from_string(arg), Some(args.next().unwrap()));
                 }
             } else {
                 arg_map.insert(CommandArgName::from_string(arg), None);
@@ -96,10 +99,10 @@ fn validate(
     for arg_type in arg_options.iter() {
         if let Some(arg) = arg_map.get(&arg_type.name) {
             if arg.is_none() && arg_type.has_value {
-                errors.push(format!("Missing value for argument {arg_name}", arg_name = arg_type.name.to_s()));
+                errors.push(format!("Missing value for argument {arg_name}", arg_name = arg_type.name));
             }
         } else if arg_type.required {
-            errors.push(format!("Missing required argument: {arg_name}", arg_name = arg_type.name.to_s()));
+            errors.push(format!("Missing required argument: {arg_name}", arg_name = arg_type.name));
         }
     }
     for arg in arg_map.keys() {
