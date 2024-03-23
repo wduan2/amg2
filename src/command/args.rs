@@ -45,19 +45,15 @@ impl CommandArgs {
 fn get_arg_map(mut raw_args: Peekable<IntoIter<String>>) -> HashMap<String, Option<String>> {
     let arg_regex = Regex::new(ARG_PREFIX_REGEX).unwrap();
     let mut arg_map = HashMap::new();
-    loop {
-        if let Some(arg) = raw_args.next() {
-            if let Some(next_arg) = raw_args.peek() {
-                if arg_regex.is_match(next_arg) {
-                    arg_map.insert(arg, None);
-                } else {
-                    arg_map.insert(arg, Some(raw_args.next().unwrap()));
-                }
-            } else {
+    while let Some(arg) = raw_args.next() {
+        if let Some(next_arg) = raw_args.peek() {
+            if arg_regex.is_match(next_arg) {
                 arg_map.insert(arg, None);
+            } else {
+                arg_map.insert(arg, Some(raw_args.next().unwrap()));
             }
         } else {
-            break;
+            arg_map.insert(arg, None);
         }
     }
     return arg_map;
