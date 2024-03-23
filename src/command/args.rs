@@ -1,9 +1,10 @@
 use std::collections::{HashMap};
+use std::io::{Error, ErrorKind};
 use std::iter::Peekable;
 use std::vec::IntoIter;
 use regex::Regex;
 
-pub const ARG_PREFIX_REGEX: &str = r"^(--|-)";
+const ARG_PREFIX_REGEX: &str = r"^(--|-)";
 pub const WEBSITE_ARG: &str = "--website";
 pub const USERNAME_ARG: &str = "--username";
 pub const OLD_USERNAME_ARG: &str = "--old-username";
@@ -27,19 +28,16 @@ pub struct CommandArgs {
 }
 
 impl CommandArgs {
-    // by default, an iterator returns the borrowing view (a reference), however, since we
-    // want to construct a struct that holds the data returns by iterator, the 'next()' method
-    // implementation must return a value (e.g. clone the data under the hood)
     pub fn build(
         raw_args: Peekable<IntoIter<String>>,
         arg_option_map: HashMap<String, CommandArgOption>
-    ) -> CommandArgs {
+    ) -> Result<CommandArgs, Error> {
 
         let arg_map = get_arg_map(raw_args);
 
-        validate(&arg_map, &arg_option_map);
+        validate(&arg_map, &arg_option_map)?;
 
-        return CommandArgs { arg_map, arg_option_map }
+        return Ok(CommandArgs { arg_map, arg_option_map })
     }
 }
 
@@ -67,7 +65,7 @@ fn get_arg_map(mut raw_args: Peekable<IntoIter<String>>) -> HashMap<String, Opti
 fn validate(
     arg_map: &HashMap<String, Option<String>>,
     arg_option_map: &HashMap<String, CommandArgOption>
-) {
+) -> Result<(), Error> {
     let mut errors = Vec::new();
     for arg_type in arg_option_map.values() {
         if let Some(arg) = arg_map.get(&arg_type.name) {
@@ -86,6 +84,8 @@ fn validate(
     }
 
     if !errors.is_empty() {
-        panic!("{error_message}", error_message = errors.join("\n"));
+        return Err(Error::new(ErrorKind::InvalidInput, errors.join("\n")));
     }
+
+    Ok(())
 }

@@ -3,14 +3,15 @@ mod main_test {
     use crate::{execute_with_args, vec_of_strings};
 
     #[test]
-    #[should_panic]
     fn test_execute_with_unknown_command() {
-        execute_with_args(vec_of_strings!("target/amg2", "unknown"));
+        let r = execute_with_args(vec_of_strings!("target/amg2", "unknown"));
+        assert_eq!(true, r.is_err());
+        assert!(r.err().unwrap().to_string().contains("Unknown command"));
     }
 
     #[test]
     fn test_create_happy_case() {
-        execute_with_args(vec_of_strings!(
+        let r = execute_with_args(vec_of_strings!(
             "target/amg2",
             "create",
             "--website",
@@ -20,23 +21,24 @@ mod main_test {
             "--password",
             "123"
         ));
+        assert_eq!(false, r.is_err());
     }
 
     #[test]
-    #[should_panic]
     fn test_create_missing_required_arg() {
-        execute_with_args(vec_of_strings!(
+        let r = execute_with_args(vec_of_strings!(
             "target/amg2",
             "create",
             "--password",
             "123"
         ));
+        assert_eq!(true, r.is_err());
+        assert!(r.err().unwrap().to_string().contains("Missing required argument"));
     }
 
     #[test]
-    #[should_panic]
     fn test_create_missing_arg_value() {
-        execute_with_args(vec_of_strings!(
+        let r = execute_with_args(vec_of_strings!(
             "target/amg2",
             "create",
             "--website",
@@ -44,12 +46,13 @@ mod main_test {
             "--password",
             "123"
         ));
+        assert_eq!(true, r.is_err());
+        assert!(r.err().unwrap().to_string().contains("Missing value for argument"));
     }
 
     #[test]
-    #[should_panic]
     fn test_create_with_unknown_arg() {
-        execute_with_args(vec_of_strings!(
+        let r = execute_with_args(vec_of_strings!(
             "target/amg2",
             "create",
             "--wrong-arg",
@@ -59,5 +62,7 @@ mod main_test {
             "--password",
             "123"
         ));
+        assert_eq!(true, r.is_err());
+        assert!(r.err().unwrap().to_string().contains("Unknown argument"));
     }
 }
