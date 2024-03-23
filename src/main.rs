@@ -14,8 +14,8 @@ fn main() {
 }
 
 fn execute_with_args(args: Vec<String>) {
-    let mut iargs = args.iter().peekable();
-    // skip the first argument as it will always be the name of the program
+    let mut iargs = args.into_iter().peekable();
+    // drop the first argument as it will always be the name of the program
     iargs.next();
     if let Some(command) = iargs.next() {
         match command.as_str() {

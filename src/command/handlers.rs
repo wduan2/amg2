@@ -1,9 +1,9 @@
 use std::iter::Peekable;
-use std::slice::Iter;
+use std::vec::IntoIter;
 
 use super::args::{CommandArgOption, CommandArgName, CommandArgs};
 
-pub fn create(args: Peekable<Iter<String>>) {
+pub fn create(args: Peekable<IntoIter<String>>) {
     let arg_options = vec!(
         CommandArgOption::new(CommandArgName::Website, true, true),
         CommandArgOption::new(CommandArgName::Username, true, true),

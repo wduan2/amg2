@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::iter::Peekable;
 use std::slice::Iter;
+use std::vec::IntoIter;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum CommandArgName {
@@ -22,13 +23,13 @@ impl CommandArgName {
         }
     }
 
-    fn from_string(arg: &String) -> CommandArgName {
+    fn from_string(arg: String) -> CommandArgName {
         match arg.as_str() {
             "--website" => CommandArgName::Website,
             "--username" => CommandArgName::Username,
             "--old-username" => CommandArgName::OldUsername,
             "--password" => CommandArgName::Password,
-            _ => CommandArgName::Unknown(arg.clone()) // TODO: avoid clone?
+            _ => CommandArgName::Unknown(arg)
         }
     }
 }
@@ -55,7 +56,7 @@ impl CommandArgs {
     // want to construct a struct that holds the data returns by iterator, the 'next()' method
     // implementation must return a value (e.g. clone the data under the hood)
     pub fn build(
-        args: Peekable<Iter<String>>,
+        args: Peekable<IntoIter<String>>,
         arg_options: Vec<CommandArgOption>
     ) -> CommandArgs {
 
@@ -67,11 +68,11 @@ impl CommandArgs {
     }
 }
 
-fn get_arg_map(mut args: Peekable<Iter<String>>) -> HashMap<CommandArgName, Option<String>> {
+fn get_arg_map(mut args: Peekable<IntoIter<String>>) -> HashMap<CommandArgName, Option<String>> {
     let mut arg_map = HashMap::new();
     loop {
         if let Some(arg) = args.next() {
-            if let Some(&next_arg) = args.peek() {
+            if let Some(next_arg) = args.peek() {
                 if next_arg.starts_with("--") {
                     arg_map.insert(CommandArgName::from_string(arg), None);
                 } else {
