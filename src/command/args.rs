@@ -4,35 +4,40 @@ use std::fmt::Formatter;
 use std::iter::Peekable;
 use std::vec::IntoIter;
 
+pub const WEBSITE_ARG: &str = "--website";
+pub const USERNAME_ARG: &str = "--username";
+pub const OLD_USERNAME_ARG: &str = "--old-username";
+pub const PASSWORD_ARG: &str = "--password";
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum CommandArgName {
-    Website,
-    Username,
-    OldUsername,
-    Password,
+    Website(&'static str),
+    Username(&'static str),
+    OldUsername(&'static str),
+    Password(&'static str),
     Unknown(String)
 }
 
 impl CommandArgName {
     fn from_string(arg: String) -> CommandArgName {
         match arg.as_str() {
-            "--website" => CommandArgName::Website,
-            "--username" => CommandArgName::Username,
-            "--old-username" => CommandArgName::OldUsername,
-            "--password" => CommandArgName::Password,
+            WEBSITE_ARG => CommandArgName::Website(WEBSITE_ARG),
+            USERNAME_ARG => CommandArgName::Username(USERNAME_ARG),
+            OLD_USERNAME_ARG => CommandArgName::OldUsername(OLD_USERNAME_ARG),
+            PASSWORD_ARG => CommandArgName::Password(PASSWORD_ARG),
             _ => CommandArgName::Unknown(arg)
         }
     }
 }
 
 impl fmt::Display for CommandArgName {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            CommandArgName::Website => write!(f, "--website"),
-            CommandArgName::Username => write!(f, "--username"),
-            CommandArgName::OldUsername => write!(f, "--old-username"),
-            CommandArgName::Password => write!(f, "--password"),
-            CommandArgName::Unknown(v) => write!(f, "{v}")
+            CommandArgName::Website(arg) => write!(f, "{arg}"),
+            CommandArgName::Username(arg) => write!(f, "{arg}"),
+            CommandArgName::OldUsername(arg) => write!(f, "{arg}"),
+            CommandArgName::Password(arg) => write!(f, "{arg}"),
+            CommandArgName::Unknown(arg) => write!(f, "{arg}"),
         }
     }
 }
