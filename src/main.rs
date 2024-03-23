@@ -25,10 +25,10 @@ fn execute_with_args(input: Vec<String>) -> Result<String, Error> {
         Some(command) => {
             match command.as_str() {
                 "create" => create(raw_args)?,
-                _ => return Err(Error::new(ErrorKind::InvalidInput, format!("Unknown command: {command}")))
+                _ => return Err(invalid_input!(format!("Unknown command: {command}")))
             }
             Ok(format!("Command: '{command}' executed"))
         },
-        _ => Ok(String::from("No command to specified"))
+        _ => Err(invalid_input!("No command specified"))
     }
 }

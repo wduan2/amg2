@@ -3,6 +3,7 @@ use std::io::{Error, ErrorKind};
 use std::iter::Peekable;
 use std::vec::IntoIter;
 use regex::Regex;
+use crate::invalid_input;
 
 const ARG_PREFIX_REGEX: &str = r"^(--|-)";
 pub const WEBSITE_ARG: &str = "--website";
@@ -84,7 +85,7 @@ fn validate(
     }
 
     if !errors.is_empty() {
-        return Err(Error::new(ErrorKind::InvalidInput, errors.join("\n")));
+        return Err(invalid_input!(errors.join("\n")));
     }
 
     Ok(())

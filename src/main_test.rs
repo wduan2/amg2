@@ -3,6 +3,13 @@ mod main_test {
     use crate::{execute_with_args, vec_of_strings};
 
     #[test]
+    fn test_execute_with_no_command() {
+        let r = execute_with_args(vec_of_strings!("target/amg2"));
+        assert_eq!(true, r.is_err());
+        assert!(r.err().unwrap().to_string().contains("No command specified"));
+    }
+
+    #[test]
     fn test_execute_with_unknown_command() {
         let r = execute_with_args(vec_of_strings!("target/amg2", "unknown"));
         assert_eq!(true, r.is_err());

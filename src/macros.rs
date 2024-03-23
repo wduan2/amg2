@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::{Error, ErrorKind};
 
 #[macro_export]
 macro_rules! vec_of_strings {
@@ -20,4 +21,11 @@ macro_rules! arg_option_map {
             m
         }
     };
+}
+
+#[macro_export]
+macro_rules! invalid_input {
+    ( $err:expr ) => {
+        Error::new(ErrorKind::InvalidInput, $err)
+    }
 }
