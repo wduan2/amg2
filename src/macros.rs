@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::io::{Error, ErrorKind};
-
 #[macro_export]
 macro_rules! vec_of_strings {
     ( $( $str:expr ),* ) => {
