@@ -1,62 +1,29 @@
-use std::collections::HashMap;
-use std::fmt;
-use std::fmt::Formatter;
+use std::collections::{HashMap};
 use std::iter::Peekable;
 use std::vec::IntoIter;
+use regex::Regex;
 
+pub const ARG_PREFIX_REGEX: &str = r"^(--|-)";
 pub const WEBSITE_ARG: &str = "--website";
 pub const USERNAME_ARG: &str = "--username";
 pub const OLD_USERNAME_ARG: &str = "--old-username";
 pub const PASSWORD_ARG: &str = "--password";
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum CommandArgName {
-    Website(&'static str),
-    Username(&'static str),
-    OldUsername(&'static str),
-    Password(&'static str),
-    Unknown(String)
-}
-
-impl CommandArgName {
-    fn from_string(arg: String) -> CommandArgName {
-        match arg.as_str() {
-            WEBSITE_ARG => CommandArgName::Website(WEBSITE_ARG),
-            USERNAME_ARG => CommandArgName::Username(USERNAME_ARG),
-            OLD_USERNAME_ARG => CommandArgName::OldUsername(OLD_USERNAME_ARG),
-            PASSWORD_ARG => CommandArgName::Password(PASSWORD_ARG),
-            _ => CommandArgName::Unknown(arg)
-        }
-    }
-}
-
-impl fmt::Display for CommandArgName {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            CommandArgName::Website(arg) => write!(f, "{arg}"),
-            CommandArgName::Username(arg) => write!(f, "{arg}"),
-            CommandArgName::OldUsername(arg) => write!(f, "{arg}"),
-            CommandArgName::Password(arg) => write!(f, "{arg}"),
-            CommandArgName::Unknown(arg) => write!(f, "{arg}"),
-        }
-    }
-}
-
 pub struct CommandArgOption {
-    name: CommandArgName,
+    name: String,
     required: bool,
     has_value: bool
 }
 
 impl CommandArgOption {
-    pub fn new(name: CommandArgName, required: bool, has_value: bool) -> CommandArgOption {
-        CommandArgOption { name, required, has_value }
+    pub fn new(name: &str, required: bool, has_value: bool) -> CommandArgOption {
+        CommandArgOption { name: String::from(name), required, has_value }
     }
 }
 
 pub struct CommandArgs {
-    arg_options: Vec<CommandArgOption>,
-    arg_map: HashMap<CommandArgName, Option<String>>
+    arg_option_map: HashMap<String, CommandArgOption>,
+    arg_map: HashMap<String, Option<String>>
 }
 
 impl CommandArgs {
@@ -64,30 +31,31 @@ impl CommandArgs {
     // want to construct a struct that holds the data returns by iterator, the 'next()' method
     // implementation must return a value (e.g. clone the data under the hood)
     pub fn build(
-        args: Peekable<IntoIter<String>>,
-        arg_options: Vec<CommandArgOption>
+        raw_args: Peekable<IntoIter<String>>,
+        arg_option_map: HashMap<String, CommandArgOption>
     ) -> CommandArgs {
 
-        let arg_map = get_arg_map(args);
+        let arg_map = get_arg_map(raw_args);
 
-        validate(&arg_map, &arg_options);
+        validate(&arg_map, &arg_option_map);
 
-        return CommandArgs { arg_map, arg_options }
+        return CommandArgs { arg_map, arg_option_map }
     }
 }
 
-fn get_arg_map(mut args: Peekable<IntoIter<String>>) -> HashMap<CommandArgName, Option<String>> {
+fn get_arg_map(mut raw_args: Peekable<IntoIter<String>>) -> HashMap<String, Option<String>> {
+    let arg_regex = Regex::new(ARG_PREFIX_REGEX).unwrap();
     let mut arg_map = HashMap::new();
     loop {
-        if let Some(arg) = args.next() {
-            if let Some(next_arg) = args.peek() {
-                if next_arg.starts_with("--") {
-                    arg_map.insert(CommandArgName::from_string(arg), None);
+        if let Some(arg) = raw_args.next() {
+            if let Some(next_arg) = raw_args.peek() {
+                if arg_regex.is_match(next_arg) {
+                    arg_map.insert(arg, None);
                 } else {
-                    arg_map.insert(CommandArgName::from_string(arg), Some(args.next().unwrap()));
+                    arg_map.insert(arg, Some(raw_args.next().unwrap()));
                 }
             } else {
-                arg_map.insert(CommandArgName::from_string(arg), None);
+                arg_map.insert(arg, None);
             }
         } else {
             break;
@@ -97,11 +65,11 @@ fn get_arg_map(mut args: Peekable<IntoIter<String>>) -> HashMap<CommandArgName, 
 }
 
 fn validate(
-    arg_map: &HashMap<CommandArgName, Option<String>>,
-    arg_options: &Vec<CommandArgOption>
+    arg_map: &HashMap<String, Option<String>>,
+    arg_option_map: &HashMap<String, CommandArgOption>
 ) {
     let mut errors = Vec::new();
-    for arg_type in arg_options.iter() {
+    for arg_type in arg_option_map.values() {
         if let Some(arg) = arg_map.get(&arg_type.name) {
             if arg.is_none() && arg_type.has_value {
                 errors.push(format!("Missing value for argument {arg_name}", arg_name = arg_type.name));
@@ -110,9 +78,10 @@ fn validate(
             errors.push(format!("Missing required argument: {arg_name}", arg_name = arg_type.name));
         }
     }
+
     for arg in arg_map.keys() {
-        if let CommandArgName::Unknown(v) = arg {
-            errors.push(format!("Unknown argument: {v}"))
+        if !arg_option_map.contains_key(arg) {
+            errors.push(format!("Unknown argument: {arg}"))
         }
     }
 
