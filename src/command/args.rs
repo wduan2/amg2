@@ -65,8 +65,8 @@ fn validate(
 ) -> Result<(), Error> {
     let mut errors = Vec::new();
     for arg_type in arg_option_map.values() {
-        if let Some(arg) = arg_map.get(&arg_type.name) {
-            if arg.is_none() && arg_type.has_value {
+        if let Some(arg_value) = arg_map.get(&arg_type.name) {
+            if arg_value.is_none() && arg_type.has_value {
                 errors.push(format!("Missing value for argument {arg_name}", arg_name = arg_type.name));
             }
         } else if arg_type.required {
